@@ -15,8 +15,10 @@ import java.util.Set;
 public class JwtAuthentication implements Authentication {
 
     private boolean authenticated;
-    private String userName;
+    private String login;
     private String firstName;
+
+    private String lastname;
     private Set<ERole> roles;
 
 
@@ -37,7 +39,7 @@ public class JwtAuthentication implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return userName;
+        return login;
     }
 
     @Override
