@@ -27,9 +27,10 @@ public class UserService {
      * Обновить пользоателя
      *
      * @param updatedUser обновленный пользователь
-     * @param authInfo    информация об авторизованном пользователе (обновить данные пользователя могут только сам
-     *                    пользователь либо админ)
+     * @param authInfo    информация об авторизованном пользователе
      * @return обновленного пользователя
+     * @throws AccessDeniedException если залогиненный пользователь изменяет информацию о другом пользователе этом не
+     *                               являясь админом
      */
     public User update(@NonNull User updatedUser, @NonNull JwtAuthentication authInfo) {
         User userInDB = findById(updatedUser.getId());
@@ -37,7 +38,9 @@ public class UserService {
                 !authInfo.getRoles().contains(ERole.ADMIN);
 
         if (isNotAdminAndNotOwner) {
-            throw new AccessDeniedException("Отказано в доступе");
+            throw new AccessDeniedException(
+                    String.format("Пользователь %s не может изменять информацию другого пользователя",
+                            authInfo.getPrincipal()));
         }
 
         if (updatedUser.getLogin() != null) {
@@ -56,7 +59,7 @@ public class UserService {
         return userInDB;
     }
 
-    public User findById(long id) {
+    public User findById(@NonNull Long id) {
         return userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException(String.format("Пользователь с id:%s не найден", id))
         );
@@ -68,7 +71,7 @@ public class UserService {
         );
     }
 
-    public void deleteUserById(long id) {
+    public void deleteUserById(@NonNull Long id) {
         userRepository.deleteById(id);
     }
 

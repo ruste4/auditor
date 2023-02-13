@@ -8,30 +8,33 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@Table(name = "users")
-@NoArgsConstructor
+@ToString
+@Table(name = "storages")
 @AllArgsConstructor
-public class User {
+@NoArgsConstructor
+public class Storage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login", nullable = false, unique = true, length = 50)
-    private String login;
+    @Column(name = "name")
+    private String name;
 
-    @Column(name = "firstname")
-    private String firstname;
+    @Column(name = "address", length = 4000)
+    private String address;
 
-    @Column(name = "lastname")
-    private String lastname;
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
+        Storage storage = (Storage) o;
+        return Objects.equals(id, storage.id);
     }
 
     @Override
