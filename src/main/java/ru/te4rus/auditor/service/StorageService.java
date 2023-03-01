@@ -21,7 +21,7 @@ public class StorageService {
 
     private final StorageRepository storageRepository;
 
-    private Storage findById(@NonNull Long id) {
+    public Storage findById(@NonNull Long id) {
         return storageRepository.findById(id).orElseThrow(
                 () -> new StorageNotFoundException(String.format("Склад с id:%s не найден", id))
         );
