@@ -49,7 +49,7 @@ public class UserApiManager {
     public UserDto findById(@NonNull Long id) {
         JwtAuthentication authInfo = authService.getAuthentication();
         User user = userService.findById(id);
-        log.debug(String.format("Пользователь с login:%s ищнт пользователя по id:%s", authInfo.getPrincipal(), id));
+        log.debug(String.format("Пользователь с login:%s ищет пользователя по id:%s", authInfo.getPrincipal(), id));
         AccessChecker.check(user, authInfo);
 
         return UserMapper.toUserDto(user);

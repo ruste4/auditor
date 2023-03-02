@@ -102,35 +102,13 @@ class StorageServiceTest {
     @Test
     public void findByIdSuccess() {
         Storage storage = createAndPersistStorage();
-        JwtAuthentication authInfo = generateAuthInfo(storage.getUser().getLogin());
 
-        assertNotNull(storageService.findById(storage.getId(), authInfo));
+        assertNotNull(storageService.findById(storage.getId()));
     }
 
     @Test
     public void findByIdFailStorageNotFound() {
-        JwtAuthentication authInfo = generateAuthInfo("login");
-
-        assertThrows(StorageNotFoundException.class, () -> storageService.findById(100L, authInfo));
-    }
-
-    @Test
-    public void findByIdFailWithAnotherUser() {
-        Storage storage = createAndPersistStorage();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-
-        assertThrows(AccessDeniedException.class, () -> storageService.findById(storage.getId(), authInfo));
-    }
-
-    @Test
-    public void findByIdFailWithAnotherUserIsAdmin() {
-        Storage storage = createAndPersistStorage();
-        User admin = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(admin.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-
-        assertNotNull(storageService.findById(storage.getId(), authInfo));
+        assertThrows(StorageNotFoundException.class, () -> storageService.findById(100L));
     }
 
     @Test
@@ -155,13 +133,11 @@ class StorageServiceTest {
     @Test
     public void updateStorageNameSuccess() {
         Storage storage = createAndPersistStorage();
-        User user = storage.getUser();
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
         String updatedName = "UpdatedStorageName";
         Storage updatedStorage = new Storage();
         updatedStorage.setId(storage.getId());
         updatedStorage.setName(updatedName);
-        storageService.updateStorage(updatedStorage, authInfo);
+        storageService.updateStorage(updatedStorage);
         Storage found = entityManager.find(Storage.class, storage.getId());
 
         assertEquals(found.getName(), updatedName);
@@ -170,81 +146,22 @@ class StorageServiceTest {
     @Test
     public void updateStorageAddressSuccess() {
         Storage storage = createAndPersistStorage();
-        User user = storage.getUser();
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
         String updatedAddress = "UpdatedStorageAddress";
         Storage updatedStorage = new Storage();
         updatedStorage.setId(storage.getId());
         updatedStorage.setAddress(updatedAddress);
-        storageService.updateStorage(updatedStorage, authInfo);
+        storageService.updateStorage(updatedStorage);
         Storage found = entityManager.find(Storage.class, storage.getId());
 
         assertEquals(found.getAddress(), updatedAddress);
     }
 
     @Test
-    public void updatedStorageFailForAnotherUser() {
-        Storage storage = createAndPersistStorage();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-        String updatedName = "UpdatedName";
-        Storage updatedStorage = createAndPersistStorage();
-        updatedStorage.setName(updatedName);
-        updatedStorage.setId(storage.getId());
-
-        assertThrows(AccessDeniedException.class, () -> storageService.updateStorage(updatedStorage, authInfo));
-    }
-
-    @Test
-    public void updateStorageSuccessAnAnotherUserWithAdminRole() {
-        Storage storage = createAndPersistStorage();
-        User admin = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(admin.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-        String updatedName = "UpdatedName";
-        Storage updatedStorage = new Storage();
-        updatedStorage.setName(updatedName);
-        updatedStorage.setId(storage.getId());
-        storageService.updateStorage(updatedStorage, authInfo);
-        Storage found = entityManager.find(Storage.class, storage.getId());
-
-        assertEquals(found.getName(), updatedName);
-    }
-
-    @Test
     public void deleteByIdSuccess() {
         Storage storage = createAndPersistStorage();
         User user = storage.getUser();
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
-        storageService.deleteById(storage.getId(), authInfo);
+        storageService.deleteById(storage.getId());
 
         assertNull(entityManager.find(Storage.class, storage.getId()));
-    }
-
-    @Test
-    public void deleteByIdFailWithAnotherUser() {
-        Storage storage = createAndPersistStorage();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-
-        assertThrows(AccessDeniedException.class, () -> storageService.deleteById(storage.getId(), authInfo));
-    }
-
-    @Test
-    public void deleteByIdSuccessWithAnotherUserIsAdmin() {
-        Storage storage = createAndPersistStorage();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-        storageService.deleteById(storage.getId(), authInfo);
-
-        assertNull(entityManager.find(Storage.class, storage.getId()));
-    }
-
-    private JwtAuthentication generateAuthInfo(String login) {
-        JwtAuthentication authInfo = new JwtAuthentication();
-        authInfo.setLogin(login);
-        authInfo.setRoles(Collections.singleton(ERole.USER));
-        return authInfo;
     }
 }
