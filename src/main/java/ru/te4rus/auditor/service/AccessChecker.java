@@ -2,10 +2,7 @@ package ru.te4rus.auditor.service;
 
 import lombok.NonNull;
 import org.springframework.security.access.AccessDeniedException;
-import ru.te4rus.auditor.domain.ERole;
-import ru.te4rus.auditor.domain.JwtAuthentication;
-import ru.te4rus.auditor.domain.Revision;
-import ru.te4rus.auditor.domain.Storage;
+import ru.te4rus.auditor.domain.*;
 
 public class AccessChecker {
 
@@ -14,9 +11,13 @@ public class AccessChecker {
         checkAccess(authInfo, revisionUserLogin);
     }
 
-    public static void check(@NonNull Storage storage, @NonNull JwtAuthentication authnfo) {
+    public static void check(@NonNull Storage storage, @NonNull JwtAuthentication authInfo) {
         String storageUserLogin = storage.getUser().getLogin();
-        checkAccess(authnfo, storageUserLogin);
+        checkAccess(authInfo, storageUserLogin);
+    }
+
+    public static void check(@NonNull User user, @NonNull JwtAuthentication authInfo) {
+        checkAccess(authInfo, user.getLogin());
     }
 
     private static void checkAccess(@NonNull JwtAuthentication authInfo, @NonNull String userLogin) {

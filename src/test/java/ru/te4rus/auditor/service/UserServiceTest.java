@@ -10,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEnti
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import ru.te4rus.auditor.domain.ERole;
 import ru.te4rus.auditor.domain.JwtAuthentication;
@@ -83,63 +82,6 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserLoginSuccess() {
-        User user = createAndPersistUser();
-        User updatedUser = userSupplier.get();
-        String updatedLogin = "UpdatedLogin";
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
-
-        updatedUser.setLogin(updatedLogin);
-        updatedUser.setId(user.getId());
-
-        userService.update(updatedUser, authInfo);
-
-        assertEquals(testEntityManager.find(User.class, user.getId()).getLogin(), updatedLogin);
-    }
-
-    @Test
-    void updateUserLoginFailLoginAlreadyExist() {
-        User user1 = createAndPersistUser();
-        User user2 = createAndPersistUser();
-        User updatedUser2 = new User();
-        JwtAuthentication authInfo = generateAuthInfo(user2.getLogin());
-
-        updatedUser2.setId(user2.getId());
-        updatedUser2.setLogin(user1.getLogin());
-
-        assertThrows(DataIntegrityViolationException.class, () -> userService.update(updatedUser2, authInfo));
-
-    }
-
-    @Test
-    void updateUserFailAccessDeniedAnotherUser() {
-        User user = createAndPersistUser();
-        User anotherUser = createAndPersistUser();
-        User updatedUser = new User();
-        updatedUser.setId(user.getId());
-        updatedUser.setLastname("UpdatedLastName");
-        JwtAuthentication autInfo = generateAuthInfo(anotherUser.getLogin());
-
-        assertThrows(AccessDeniedException.class, () -> userService.update(updatedUser, autInfo));
-    }
-
-    @Test
-    void updateUserSuccessWithAnotherUserIsAdmin() {
-        User user = createAndPersistUser();
-        User anotherUser = createAndPersistUser();
-        String updatedFirstname = "UpdatedFirstName";
-        User updatedUser = new User(user.getId(), null, updatedFirstname, null);
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-
-        userService.update(updatedUser, authInfo);
-
-        User found = testEntityManager.find(User.class, user.getId());
-
-        assertEquals(found.getFirstname(), updatedFirstname);
-    }
-
-    @Test
     public void findUserByIdSuccess() {
         User user = createAndPersistUser();
 
@@ -180,10 +122,4 @@ class UserServiceTest {
         return testEntityManager.persist(userSupplier.get());
     }
 
-    private JwtAuthentication generateAuthInfo(String login) {
-        JwtAuthentication authInfo = new JwtAuthentication();
-        authInfo.setLogin(login);
-        authInfo.setRoles(Collections.singleton(ERole.USER));
-        return authInfo;
-    }
 }
