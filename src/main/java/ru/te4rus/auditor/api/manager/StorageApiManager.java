@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import ru.te4rus.auditor.domain.JwtAuthentication;
 import ru.te4rus.auditor.domain.Storage;
 import ru.te4rus.auditor.domain.User;
@@ -21,7 +20,6 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Transactional
 @RequiredArgsConstructor
 public class StorageApiManager {
 

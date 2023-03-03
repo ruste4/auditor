@@ -6,6 +6,11 @@ import ru.te4rus.auditor.domain.*;
 
 public class AccessChecker {
 
+    public static void check(@NonNull Item item, @NonNull JwtAuthentication authInfo) {
+        String itemUserLogin = item.getStorage().getUser().getLogin();
+        checkAccess(authInfo, itemUserLogin);
+    }
+
     public static void check(@NonNull Revision revision, @NonNull JwtAuthentication authInfo) {
         String revisionUserLogin = revision.getStorage().getUser().getLogin();
         checkAccess(authInfo, revisionUserLogin);

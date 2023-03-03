@@ -10,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import ru.te4rus.auditor.domain.*;
 import ru.te4rus.auditor.exception.ItemNotFoundException;
@@ -80,45 +79,19 @@ class ItemServiceTest {
     @Test
     public void findByIdSuccess() {
         Item item = createAndPersistItem();
-        User user = item.getStorage().getUser();
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
 
-        assertNotNull(itemService.findById(item.getId(), authInfo));
+        assertNotNull(itemService.findById(item.getId()));
     }
 
     @Test
     public void findByIdFailItemNotFound() {
-        User user = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(user.getLogin());
-
-        assertThrows(ItemNotFoundException.class, () -> itemService.findById(100L, authInfo));
-    }
-
-    @Test
-    public void findByIdFailWithAnotherUser() {
-        Item item = createAndPersistItem();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-
-        assertThrows(AccessDeniedException.class, () -> itemService.findById(item.getId(), authInfo));
-    }
-
-    @Test
-    public void findByIdSuccessWithAnotherUserIsAdmin() {
-        Item item = createAndPersistItem();
-        User admin = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(admin.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-
-        assertNotNull(itemService.findById(item.getId(), authInfo));
+        assertThrows(ItemNotFoundException.class, () -> itemService.findById(100L));
     }
 
     @Test
     public void findByStorageSuccess() {
         Storage storage1 = createAndPersistStorage();
         Storage storage2 = createAndPersistStorage();
-        JwtAuthentication authInfoByUserOfStorage1 = generateAuthInfo(storage1.getUser().getLogin());
-        JwtAuthentication authInfoByUserOfStorage2 = generateAuthInfo(storage2.getUser().getLogin());
 
         Item firstItemForStorage1 = createAndPersistItem(storage1);
         Item secondItemForStorage1 = createAndPersistItem(storage1);
@@ -128,41 +101,20 @@ class ItemServiceTest {
         List<Item> itemsForStorage2 = List.of(itemForStorage2);
 
         assertAll(
-                () -> assertEquals(itemsForStorage1, itemService.findByStorage(storage1, authInfoByUserOfStorage1)),
-                () -> assertEquals(itemsForStorage2, itemService.findByStorage(storage2, authInfoByUserOfStorage2))
+                () -> assertEquals(itemsForStorage1, itemService.findByStorage(storage1)),
+                () -> assertEquals(itemsForStorage2, itemService.findByStorage(storage2))
         );
-    }
-
-    @Test
-    public void findByStorageFailWithAnotherUser() {
-        Item item = createAndPersistItem();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-
-
-        assertThrows(AccessDeniedException.class, () -> itemService.findByStorage(item.getStorage(), authInfo));
-    }
-
-    @Test
-    public void findByStorageSuccessWithAnotherUserIsAdmin() {
-        Item item = createAndPersistItem();
-        User admin = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(admin.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-
-        assertNotNull(itemService.findByStorage(item.getStorage(), authInfo));
     }
 
     @Test
     public void updateItemNameSuccess() {
         Item item = createAndPersistItem();
-        JwtAuthentication authInfo = generateAuthInfo(item.getStorage().getUser().getLogin());
         String updatedName = "updatedItemName";
         Item updatedItem = new Item();
         updatedItem.setId(item.getId());
         updatedItem.setName(updatedName);
 
-        itemService.updateItem(updatedItem, authInfo);
+        itemService.updateItem(updatedItem);
         Item found = entityManager.find(Item.class, item.getId());
 
         assertEquals(found.getName(), updatedName);
@@ -171,69 +123,23 @@ class ItemServiceTest {
     @Test
     public void updatedItemDescriptionSuccess() {
         Item item = createAndPersistItem();
-        JwtAuthentication authInfo = generateAuthInfo(item.getStorage().getUser().getLogin());
         String updatedDescription = "updatedDescription";
         Item updatedItem = new Item();
         updatedItem.setId(item.getId());
         updatedItem.setDescription(updatedDescription);
 
-        itemService.updateItem(updatedItem, authInfo);
+        itemService.updateItem(updatedItem);
         Item found = entityManager.find(Item.class, item.getId());
 
         assertEquals(found.getDescription(), updatedDescription);
     }
 
     @Test
-    public void updatedItemFailWithAnotherUser() {
-        Item item = createAndPersistItem();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-        Item updatedItem = new Item();
-        updatedItem.setId(item.getId());
-        updatedItem.setName("updatedName");
-
-        assertThrows(AccessDeniedException.class, () -> itemService.updateItem(updatedItem, authInfo));
-    }
-
-    @Test
-    public void updatedItemSuccessWithAnotherUserIsAdmin() {
-        Item item = createAndPersistItem();
-        User admin = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(admin.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-        Item updatedItem = new Item();
-        updatedItem.setId(item.getId());
-        updatedItem.setName("updatedName");
-
-        assertDoesNotThrow(() -> itemService.updateItem(updatedItem, authInfo));
-    }
-
-    @Test
     public void deleteByIdSuccess() {
         Item item = createAndPersistItem();
-        JwtAuthentication authInfo = generateAuthInfo(item.getStorage().getUser().getLogin());
-        itemService.deleteById(item.getId(), authInfo);
+        itemService.deleteById(item.getId());
 
         assertNull(entityManager.find(Item.class, item.getId()));
-    }
-
-    @Test
-    public void deleteByIdFailWithAnotherUser() {
-        Item item = createAndPersistItem();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-
-        assertThrows(AccessDeniedException.class, () -> itemService.deleteById(item.getId(), authInfo));
-    }
-
-    @Test
-    public void deleteByIdWithAnotherUserIsAdmin() {
-        Item item = createAndPersistItem();
-        User anotherUser = createAndPersistUser();
-        JwtAuthentication authInfo = generateAuthInfo(anotherUser.getLogin());
-        authInfo.setRoles(Collections.singleton(ERole.ADMIN));
-
-        assertDoesNotThrow(() -> itemService.deleteById(item.getId(), authInfo));
     }
 
     private Item createAndPersistItem() {
@@ -254,12 +160,5 @@ class ItemServiceTest {
 
     private User createAndPersistUser() {
         return entityManager.persist(userSupplier.get());
-    }
-
-    private JwtAuthentication generateAuthInfo(String login) {
-        JwtAuthentication authInfo = new JwtAuthentication();
-        authInfo.setLogin(login);
-        authInfo.setRoles(Collections.singleton(ERole.USER));
-        return authInfo;
     }
 }
