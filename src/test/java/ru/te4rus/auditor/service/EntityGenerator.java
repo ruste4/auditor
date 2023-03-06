@@ -11,7 +11,6 @@ public class EntityGenerator {
 
     private final static AtomicLong POSTFIX_HOLDER = new AtomicLong();
 
-
     public static User createUser() {
         User user = new User();
         long userId = POSTFIX_HOLDER.getAndIncrement();
@@ -58,6 +57,36 @@ public class EntityGenerator {
         return revision;
     }
 
+
+    public static Container createContainer(@NonNull TestEntityManager entityManager) {
+        Container container = new Container();
+        Item item  = createAndPersistItem(entityManager);
+        container.setItem(item);
+        container.setFullContainerWeight(1.2);
+        container.setEmptyContainerWeight(0.3);
+        container.setContainerCapacity(0.7);
+
+        return container;
+    }
+
+    public static Container createContainer(Item item) {
+        Container container = new Container();
+        container.setItem(item);
+        container.setFullContainerWeight(1.2);
+        container.setEmptyContainerWeight(0.3);
+        container.setContainerCapacity(0.7);
+
+        return container;
+    }
+
+    public static Container createAndPersistContainer(@NonNull TestEntityManager entityManager, @NonNull Item item) {
+        return entityManager.persist(createContainer(item));
+    }
+
+    public static Container createAndPersistContainer(@NonNull TestEntityManager entityManager) {
+        return entityManager.persist(createContainer(entityManager));
+    }
+
     public static Revision createAndPersistRevision(@NonNull TestEntityManager entityManager) {
         return entityManager.persist(createRevision(entityManager));
     }
@@ -68,14 +97,6 @@ public class EntityGenerator {
 
     public static Item createAndPersistItem(@NonNull TestEntityManager entityManager) {
         return entityManager.persist(createItem(entityManager));
-    }
-
-    public static Item createAndPersistItem(@NonNull TestEntityManager entityManager, @NonNull Storage storage) {
-        Item item = createItem(entityManager);
-        item.setStorage(storage);
-        entityManager.persist(item);
-
-        return item;
     }
 
     public static Storage createAndPersistStorage(@NonNull TestEntityManager entityManager) {
