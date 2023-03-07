@@ -79,6 +79,35 @@ public class EntityGenerator {
         return container;
     }
 
+    public static Weighing createWeighing(@NonNull TestEntityManager entityManager) {
+        Weighing weighing = new Weighing();
+        weighing.setContainer(createAndPersistContainer(entityManager));
+        weighing.setRevision(createAndPersistRevision(entityManager));
+        weighing.setWeight(0.85);
+
+        return weighing;
+    }
+
+    public static Weighing createWeighing(@NonNull TestEntityManager entityManager, @NonNull Revision revision) {
+        Weighing weighing = new Weighing();
+        weighing.setContainer(createAndPersistContainer(entityManager));
+        weighing.setRevision(revision);
+        weighing.setWeight(0.85);
+
+        return weighing;
+    }
+
+    public static Weighing createAndPersistWeighing(
+            @NonNull TestEntityManager entityManager,
+            @NonNull Revision revision
+    ) {
+        return entityManager.persist(createWeighing(entityManager, revision));
+    }
+
+    public static Weighing createAndPersistWeighing(@NonNull TestEntityManager entityManager) {
+        return entityManager.persist(createWeighing(entityManager));
+    }
+
     public static Container createAndPersistContainer(@NonNull TestEntityManager entityManager, @NonNull Item item) {
         return entityManager.persist(createContainer(item));
     }
